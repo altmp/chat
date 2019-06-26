@@ -4,11 +4,11 @@ You can start by adding the chat resource in its own folder called 'chat'.
 ```
 altVServerFolder/
 └── resources/
-    └── chat/
-        ├── index.mjs
-        ├── client.mjs
-        ├── resource.cfg
-        └── html/
+    ├── chat/
+    |   ├── index.mjs
+    |   ├── client.mjs
+    |   ├── resource.cfg
+    |   └── html/
     └── your_resource/
         ├── your_resource_main.mjs
         ├── your_resource_client.mjs
