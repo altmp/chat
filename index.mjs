@@ -1,6 +1,7 @@
 import alt from 'alt';
 
 let cmdHandlers = {};
+let mutedPlayers = new Map();
 
 function invokeCmd(player, cmd, args) {
   const callback = cmdHandlers[cmd];
@@ -25,6 +26,11 @@ alt.onClient('chatmessage', (player, msg) => {
       invokeCmd(player, cmd, args);
     }
   } else {
+    if (mutedPlayers.has(player) && mutedPlayers[player]) {
+      send(player, '{FF0000} You are currently muted.');
+      return;
+    }
+
     msg = msg.trim();
 
     if (msg.length > 0) {
@@ -51,4 +57,24 @@ export function registerCmd(cmd, callback) {
   }
 }
 
-export default { send, broadcast, registerCmd };
+// Used in an onConnect function to add functions to the player entity for a seperate resource.
+export function setupPlayer(player) {
+  player.sendMessage = (msg) => {
+    send(player, msg);
+  }
+
+  player.mute = (state) => {
+    mutedPlayers.set(player, state);
+  }
+}
+
+// Arbitrary events to call.
+alt.on('sendChatMessage', (player, msg) => {
+  send(player, msg);
+});
+
+alt.on('broadcastMessage', (msg) => {
+  send(null, msg);
+});
+
+export default { send, broadcast, registerCmd, setupPlayer };
