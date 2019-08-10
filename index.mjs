@@ -1,16 +1,19 @@
-import alt from 'alt';
+import * as alt from 'alt';
 
-let cmdHandlers = {};
+let cmdHandlers = [];
 let mutedPlayers = new Map();
 
-function invokeCmd(player, cmd, args) {
-  const callback = cmdHandlers[cmd];
+const admins = [];
 
-  if (callback) {
-    callback(player, args);
-  } else {
-    send(player, `{FF0000} Unknown command /${cmd}`);
-  }
+function invokeCmd(player, cmd, args) {
+  const command = cmdHandlers.find(x => x.name == cmd);
+  if (command == null)
+    return send(player, `{FF0000} Unknown command /${cmd}`);
+
+  if (command.admin && !player.getMeta("isChatAdmin"))
+    return send(player, `{FF0000} Your not allowed to use /${cmd}`);
+
+  command.cb(player, args);
 }
 
 alt.onClient('chatmessage', (player, msg) => {
@@ -49,13 +52,21 @@ export function broadcast(msg) {
   send(null, msg);
 }
 
-export function registerCmd(cmd, callback) {
-  if (cmdHandlers[cmd] !== undefined) {
+export function registerCmd(cmd, callback, isAdmin = false, datas = {}) {
+  if (cmdHandlers.find(x => x.name == cmd) != null) {
     alt.logError(`Failed to register command /${cmd}, already registered`);
   } else {
-    cmdHandlers[cmd] = callback;
+    let com = {name: cmd, cb: callback, admin: isAdmin, help: (datas.help || ''), params: (datas.params || [])};
+    alt.emitClient(null, 'addCommand', com);
+    cmdHandlers.push(com);
   }
 }
+
+alt.on('playerConnect', (player) => {
+  player.setMeta("isChatAdmin", (admins.indexOf(player.socialId) != -1))
+
+  alt.emitClient(player, 'setCommands', cmdHandlers);
+});
 
 // Used in an onConnect function to add functions to the player entity for a seperate resource.
 export function setupPlayer(player) {
@@ -76,5 +87,9 @@ alt.on('sendChatMessage', (player, msg) => {
 alt.on('broadcastMessage', (msg) => {
   send(null, msg);
 });
+
+registerCmd('clear', () => {
+  alt.emitClient(null, 'clearChat');
+}, true, {help: 'Clear the chat of all connected users'});
 
 export default { send, broadcast, registerCmd, setupPlayer };
