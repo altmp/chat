@@ -43,5 +43,18 @@ chat.registerCmd('pos', (player, args) => {
 });
 ```
 
-
+**registerCmd definition:**
+```ts
+registerCmd(commandName: string, callback: Function, isAdmin: boolean? = false, datas? = Object);
+```
+ - commandName: The name of the command you want to add, ex: 'veh' will result in the command /veh
+ - callback: The function executed when a player use this command (give you the player who execute it and everything than he write after in an array splitted by space)
+ - isAdmin: Set it to true if you want to prevent anyone from using this command, only socialId who are in the array in index.mjs: `const admins = [];` will be able to execute it (Not required, default to false)
+ - datas: An object with the following structure :
+    - `help`: (string) a small message that will be shown to players to explain what will do the command
+    - `params`: (Array) an array of objects containing the command parameters
+    The structure of the object is :
+        - `name`: (string) name of the param
+        - `required`: (boolean) if the param is required or not
+        - `help`: (string) a small message to explain what it's purpose
 

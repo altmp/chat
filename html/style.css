@@ -80,6 +80,10 @@ body {
 	width: 100%;
 }
 
+#message {
+  display: block;
+}
+
 .msginput input {
   background: rgba(0, 0, 0, .5);
   border: 0;
@@ -91,6 +95,34 @@ body {
   font-family: inherit;
   font-size: 1em;
 
+}
+
+.msginput .inputSuggestions {
+  background: rgba(0, 0, 0, .5);
+  display: none;
+  border: 0;
+  width: calc(100% - 20px);
+  min-height: 15px;
+  margin-left: 5px;
+  margin-top: 10px;
+  color: white;
+  font-family: inherit;
+  font-size: 1em;
+  padding: 10px;
+}
+
+.msginput .inputSuggestions li {
+  margin-top: 2px;
+  list-style: none;
+}
+.msginput .inputSuggestions li span {
+  margin-left: 5px;
+  font-size: .7em;
+  display: block;
+  max-width: calc(100% - 5px);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .msginput input::selection {

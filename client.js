@@ -1,4 +1,6 @@
-import alt from 'alt';
+import * as alt from 'alt';
+
+import Config from 'config.js';
 
 let buffer = [];
 
@@ -10,9 +12,9 @@ let view = new alt.WebView("http://resources/chat/html/index.html");
 
 function addMessage(name, text) {
   if (name) {
-    view.execJS(`addMessage('${name}', '${text}')`);
+    view.emit('addMessage', name, text);
   } else {
-    view.execJS(`addString('${text}')`);
+    view.emit('addString', text);
   }
 }
 
@@ -20,6 +22,7 @@ view.on('chatloaded', () => {
   for (const msg of buffer) {
     addMessage(msg.name, msg.text);
   }
+  view.emit('configChat', {autoHide: Config.autoHide, welcomeMessage: Config.welcomeMessage});
 
   alt.log('loaded');
   loaded = true;
@@ -46,31 +49,48 @@ export function pushLine(text) {
 
 alt.onServer('chatmessage', pushMessage);
 
+alt.onServer('addCommand', (cmd) => {
+  view.emit('addcommand', cmd);
+});
+
+alt.onServer('setCommands', (cmds) => {
+  view.emit('setCommands', cmds);
+});
+
+alt.onServer('clearChat', () => {
+  view.emit('clearChat');
+});
+
 alt.on('keyup', (key) => {
   if (!loaded)
     return;
 
   if (!opened && key === 0x54 && alt.gameControlsEnabled()) {
     opened = true;
-    view.execJS('openChat()');
+    view.emit('openChat');
     alt.toggleGameControls(false);
   } else if (!opened && key === 0xBF && alt.gameControlsEnabled()) {
     opened = true;
-    view.execJS('openChat(true)');
+    view.emit('openChat', true);
     alt.toggleGameControls(false);
   }
-  else if (opened && key == 0x1B) {
-    opened = false;
-    view.execJS('closeChat()');
-    alt.toggleGameControls(true);
+  else if (opened) {
+    if (key == 0x1B) {
+      opened = false;
+      view.emit('closeChat');
+      alt.toggleGameControls(true);
+    } else if (key == 0xA4) { // Left Alt Enable Cursor
+      // alt.showCursor(true);
+    }
   }
 
   if (key == 0x76) {
     hidden = !hidden;
-    alt.log(hidden);
-    alt.DisplayHud(!hidden);
-    alt.DisplayRadar(!hidden);
-    view.execJS(`hideChat(${hidden})`);
+    if (Config.hideHudOnF7) {
+      alt.DisplayHud(!hidden);
+      alt.DisplayRadar(!hidden);
+    }
+    view.emit('hideChat', hidden);
   }
 })
 
