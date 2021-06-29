@@ -27,6 +27,7 @@ view.on('chatmessage', (text) => {
   alt.emitServer('chat:message', text);
 
   opened = false;
+  view.unfocus();
   alt.toggleGameControls(true);
 })
 
@@ -50,13 +51,16 @@ alt.on('keyup', (key) => {
       opened = true;
       view.emit('openChat', false);
       alt.toggleGameControls(false);
+      view.focus();
     } else if (!opened && key === 0xBF && alt.gameControlsEnabled()) {
       opened = true;
       view.emit('openChat', true);
       alt.toggleGameControls(false);
+      view.focus();
     } else if (opened && key == 0x1B) {
       opened = false;
       view.emit('closeChat');
+      view.unfocus();
       alt.toggleGameControls(true);
     }
   }
